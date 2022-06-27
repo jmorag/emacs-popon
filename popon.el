@@ -107,7 +107,7 @@ shouldn't contain newlines.  Example:
                             (buffer-substring (point) (point-max))))
               (setf (cadr (nth (+ y i) framebuffer)) t)
               (when (< end (point-max))
-                (setf (caddr (nth (+ y i) framebuffer)) t))))))
+                (setf (cadr (cdr (nth (+ y i) framebuffer))) t))))))
       framebuffer)))
 
 ;;;###autoload
@@ -423,7 +423,8 @@ START and END specifies which part to return.  They can be in any order."
                  (not (let* ((extend-attr
                               (lambda (face)
                                 (if (facep face)
-                                    (face-attribute face :extend)
+                                    (when (>= emacs-major-version 27)
+                                      (face-attribute face :extend))
                                   (if-let (val (plist-member face :extend))
                                       (cadr val)
                                     'unspecified))))
