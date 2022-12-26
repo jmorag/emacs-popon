@@ -40,6 +40,35 @@
 (require 'subr-x)
 (require 'cl-lib)
 
+(defun popon--move-to-column (goal)
+  "Move to GOAL like `move-to-column' and with movement forced.
+
+Any spaces inserted have a width set in the display property.
+This leaves the spaces unaffected by the active display table,
+such as when such as when `whitespace-mode' is enabled with
+space-mark in `whitespace-style'."
+  (let ((landing (move-to-column goal)))
+    ;; Resolve an overshoot in case the goal is inside of
+    ;; a tab character.
+    (when (and (> landing goal)
+               (char-equal (char-before (point)) ?\t))
+      ;; Delete tab that caused the overshoot and replace with spaces
+      ;; up to the goal.
+      (delete-char -1)
+      (let ((spaces
+             (- goal (- landing tab-width))))
+        (insert
+         (propertize
+          (make-string spaces ? )
+          'display (list 'space :width spaces)))))
+    ;; Add padding in case of an undershoot.
+    (when (< landing goal)
+      (let* ((padding-width (- goal (current-column)))
+             (padding (make-string padding-width ? )))
+        (insert
+         (propertize padding 'display
+                     (list 'space :width padding-width)))))))
+
 (defun popon--render-lines (framebuffer x y lines width)
   "Place LINES on top of FRAMEBUFFER.
 
@@ -102,9 +131,9 @@ Example:
           (insert (car (nth (+ y i) framebuffer)))
           (goto-char (point-min))
           (let ((end (line-end-position)))
-            (move-to-column x t)
+            (popon--move-to-column x)
             (let ((mark (point)))
-              (move-to-column (+ x width) t)
+              (popon--move-to-column (+ x width))
               (setf (car (nth (+ y i) framebuffer))
                     (concat (buffer-substring (point-min) mark)
                             (nth i lines)
