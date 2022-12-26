@@ -45,8 +45,8 @@
 
 Any spaces inserted have a width set in the display property.
 This leaves the spaces unaffected by the active display table,
-such as when such as when `whitespace-mode' is enabled with
-space-mark in `whitespace-style'."
+such as when `whitespace-mode' is enabled with space-mark in
+`whitespace-style'."
   (let ((landing (move-to-column goal)))
     ;; Resolve an overshoot in case the goal is inside of
     ;; a tab character.
